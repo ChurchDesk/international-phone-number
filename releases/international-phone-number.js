@@ -1,20 +1,30 @@
 // Author Marek Pietrucha
 // https://github.com/mareczek/international-phone-number
-
-(function() {
+(function(angular, factory) {
+  if (typeof define === "function" && define.amd) {
+    return define("international-phone-number", ["angular"], function(angular) {
+      return factory(angular);
+    });
+  } else {
+    return factory(angular);
+  }
+})((typeof angular === "undefined" ? null : angular), function(angular) {
   "use strict";
-  angular.module("internationalPhoneNumber", []).directive('internationalPhoneNumber', function() {
+  return angular.module("internationalPhoneNumber", []).directive('internationalPhoneNumber', function() {
     return {
       restrict: 'A',
       require: '^ngModel',
-      scope: true,
+      scope: {
+        ngModel: '=',
+        defaultCountry: '@'
+      },
       link: function(scope, element, attrs, ctrl) {
-        var handleWhatsSupposedToBeAnArray, options, read;
+        var handleWhatsSupposedToBeAnArray, options, read, watchOnce;
         read = function() {
           return ctrl.$setViewValue(element.val());
         };
         handleWhatsSupposedToBeAnArray = function(value) {
-          if (typeof value === "object") {
+          if (value instanceof Array) {
             return value;
           } else {
             return value.toString().replace(/[ ]/g, '').split(',');
@@ -33,23 +43,33 @@
         };
         angular.forEach(options, function(value, key) {
           var option;
-          option = eval("attrs." + key);
-          if (angular.isDefined(option)) {
-            if (key === 'preferredCountries') {
-              return options.preferredCountries = handleWhatsSupposedToBeAnArray(option);
-            } else if (key === 'onlyCountries') {
-              return options.onlyCountries = handleWhatsSupposedToBeAnArray(option);
-            } else if (typeof value === "boolean") {
-              return options[key] = option === "true";
-            } else {
-              return options[key] = option;
-            }
+          if (!(attrs.hasOwnProperty(key) && angular.isDefined(attrs[key]))) {
+            return;
+          }
+          option = attrs[key];
+          if (key === 'preferredCountries') {
+            return options.preferredCountries = handleWhatsSupposedToBeAnArray(option);
+          } else if (key === 'onlyCountries') {
+            return options.onlyCountries = handleWhatsSupposedToBeAnArray(option);
+          } else if (typeof value === "boolean") {
+            return options[key] = option === "true";
+          } else {
+            return options[key] = option;
           }
         });
-        element.intlTelInput(options);
-        if (!options.utilsScript) {
-          element.intlTelInput('loadUtils', 'bower_components/intl-tel-input/lib/libphonenumber/build/utils.js');
-        }
+        watchOnce = scope.$watch('ngModel', function(newValue) {
+          return scope.$$postDigest(function() {
+            options.defaultCountry = scope.defaultCountry;
+            if (newValue !== null && newValue !== void 0 && newValue !== '') {
+              element.val(newValue);
+            }
+            element.intlTelInput(options);
+            if (!(attrs.skipUtilScriptDownload !== void 0 || options.utilsScript)) {
+              element.intlTelInput('loadUtils', '/bower_components/intl-tel-input/lib/libphonenumber/build/utils.js');
+            }
+            return watchOnce();
+          });
+        });
         ctrl.$parsers.push(function(value) {
           if (!value) {
             return value;
@@ -57,8 +77,11 @@
           return value.replace(/[^\d]/g, '');
         });
         ctrl.$parsers.push(function(value) {
+          var validity;
           if (value) {
-            ctrl.$setValidity('international-phone-number', element.intlTelInput("isValidNumber"));
+            validity = element.intlTelInput("isValidNumber");
+            ctrl.$setValidity('international-phone-number', validity);
+            ctrl.$setValidity('', validity);
           } else {
             value = '';
             delete ctrl.$error['international-phone-number'];
@@ -74,5 +97,4 @@
       }
     };
   });
-
-}).call(this);
+});

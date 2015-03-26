@@ -1,5 +1,3 @@
-// Author Marek Pietrucha
-// https://github.com/mareczek/international-phone-number
 (function(angular, factory) {
   if (typeof define === "function" && define.amd) {
     return define("international-phone-number", ["angular"], function(angular) {
@@ -9,8 +7,7 @@
     return factory(angular);
   }
 })((typeof angular === "undefined" ? null : angular), function(angular) {
-  "use strict";
-  return angular.module("internationalPhoneNumber", []).directive('internationalPhoneNumber', function() {
+  "use strict";  return angular.module("internationalPhoneNumber", []).directive('internationalPhoneNumber', function() {
     return {
       restrict: 'A',
       require: '^ngModel',
@@ -77,15 +74,14 @@
           return value.replace(/[^\d]/g, '');
         });
         ctrl.$parsers.push(function(value) {
-          var validity;
+          var validity = true;
           if (value) {
             validity = element.intlTelInput("isValidNumber");
-            ctrl.$setValidity('international-phone-number', validity);
-            ctrl.$setValidity('', validity);
           } else {
             value = '';
-            delete ctrl.$error['international-phone-number'];
+            ctrl.$setPristine(true);
           }
+          ctrl.$setValidity('international-phone-number', validity);
           return value;
         });
         element.on('blur keyup change', function(event) {

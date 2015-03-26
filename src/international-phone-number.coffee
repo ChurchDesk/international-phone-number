@@ -77,13 +77,16 @@
         value.replace(/[^\d]/g, '')
 
       ctrl.$parsers.push (value) ->
+        validity = true
+
         if value
           validity = element.intlTelInput("isValidNumber")
-          ctrl.$setValidity 'international-phone-number', validity
-          ctrl.$setValidity '', validity
         else
           value = ''
-          delete ctrl.$error['international-phone-number']
+          ctrl.$setPristine true;
+
+        ctrl.$setValidity 'international-phone-number', validity
+        #ctrl.$setValidity '', validity;
         value
 
       element.on 'blur keyup change', (event) ->

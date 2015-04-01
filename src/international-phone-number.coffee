@@ -1,5 +1,4 @@
-# Author Marek Pietrucha
-# https://github.com/mareczek/international-phone-number
+# https://github.com/zvictor/international-phone-number
 ((angular, factory) ->
   if typeof define is "function" and define.amd
     define "international-phone-number", [ "angular" ], (angular) ->
@@ -79,7 +78,7 @@
       ctrl.$parsers.push (value) ->
         validity = true
 
-        if value
+        if value and element.intlTelInput("getNumber", intlTelInputUtils.numberFormat.NATIONAL)
           validity = element.intlTelInput("isValidNumber")
         else
           value = ''

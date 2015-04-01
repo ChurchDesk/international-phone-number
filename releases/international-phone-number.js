@@ -75,7 +75,7 @@
         });
         ctrl.$parsers.push(function(value) {
           var validity = true;
-          if (value) {
+          if (value && element.intlTelInput("getNumber", intlTelInputUtils.numberFormat.NATIONAL)) {
             validity = element.intlTelInput("isValidNumber");
           } else {
             value = '';

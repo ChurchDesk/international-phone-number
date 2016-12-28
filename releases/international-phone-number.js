@@ -79,7 +79,6 @@
             validity = element.intlTelInput("isValidNumber");
           } else {
             value = '';
-            ctrl.$setPristine(true);
           }
           ctrl.$setValidity('international-phone-number', validity);
           return value;
